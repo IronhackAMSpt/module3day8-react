@@ -1,26 +1,61 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+import Signup from "./Signup";
+import Navbar from "./Navbar";
+import Login from "./Login";
+import Secret from "./Secret";
+import authService from './auth/AuthService';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { Switch, Route } from "react-router-dom";
+import AuthService from "./auth/AuthService";
+
+class App extends Component {
+  state = {
+    user: null
+  };
+
+  service = new AuthService();
+
+  setUser = user => {
+    this.setState({ user: user });
+  };
+
+  fetchUser = () => {
+    if(this.state.user === null) {
+      this.service.currentUser()
+        .then(response => {
+          this.setState({user: response})
+        })
+        .catch(err => {
+          this.setState({user: null})
+        })
+    }
+  }
+
+  componentDidMount () {
+    this.fetchUser();
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <Navbar currentUser={this.state.user}/>
+        <Switch>
+          <Route exact path="/" component={Signup} />
+          <Route
+            exact
+            path="/login"
+            render={() => <Login setUser={this.setUser} />}
+          />
+          <Route
+            exact
+            path="/secret"
+            render={() => <Secret currentUser={this.state.user} />}
+          />
+        </Switch>
+      </div>
+    );
+  }
 }
 
 export default App;
